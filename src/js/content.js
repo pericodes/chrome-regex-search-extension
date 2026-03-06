@@ -63,36 +63,51 @@ function isExpandable(node) {
 
 /* Highlight all text that matches regex */
 function highlight(regex, highlightColor, selectedColor, textColor, maxResults) {
+  // Create a new regex without global/sticky flags to avoid state issues
+  var source = regex.source;
+  var flags = regex.ignoreCase ? 'i' : '';
+  var safeRegex = new RegExp(source, flags);
+
   function highlightRecursive(node) {
     if(searchInfo.length >= maxResults){
       return;
     }
     if (isTextNode(node)) {
-      var index = node.data.search(regex);
-      if (index >= 0 && node.data.length > 0) {
-        var matchedText = node.data.match(regex)[0];
-        var matchedTextNode = node.splitText(index);
-        matchedTextNode.splitText(matchedText.length);
-        var spanNode = document.createElement(HIGHLIGHT_TAG); 
+      var match = node.data.match(safeRegex);
+      if (match && match.index >= 0) {
+        var index = match.index;
+        var matchedText = match[0];
+        if (matchedText.length === 0) {
+          return; // Avoid infinite loops with zero-length matches
+        }
+        // Split the text node into three parts: before, match, after
+        var afterNode = node.splitText(index);
+        afterNode.splitText(matchedText.length);
+        // Create the highlight element
+        var spanNode = document.createElement(HIGHLIGHT_TAG);
         spanNode.className = HIGHLIGHT_CLASS;
         spanNode.style.backgroundColor = highlightColor;
         spanNode.style.color = textColor;
-        spanNode.appendChild(matchedTextNode.cloneNode(true));
-        matchedTextNode.parentNode.replaceChild(spanNode, matchedTextNode);
+        spanNode.appendChild(document.createTextNode(matchedText));
+        // Replace the matched text with the highlight element
+        node.parentNode.replaceChild(spanNode, afterNode);
         searchInfo.highlightedNodes.push(spanNode);
         searchInfo.length += 1;
-        return 1;
+        // Continue processing the remaining text after the match
+        highlightRecursive(spanNode.nextSibling);
       }
     } else if (isExpandable(node)) {
-        var children = node.childNodes;
-        for (var i = 0; i < children.length; ++i) {
-          var child = children[i];
-          i += highlightRecursive(child);
-        }
+      // Need to make a copy of childNodes because the live list may change
+      var children = [];
+      for (var i = 0; i < node.childNodes.length; i++) {
+        children.push(node.childNodes[i]);
+      }
+      for (var i = 0; i < children.length; i++) {
+        highlightRecursive(children[i]);
+      }
     }
-    return 0;
   }
-  highlightRecursive(document.getElementsByTagName('body')[0]);
+  highlightRecursive(document.body);
 };
 
 /* Remove all highlights from page */
@@ -245,17 +260,29 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     );
   }
   else if ('copyToClipboard' == request.message) {
+    var text = searchInfo.highlightedNodes.map(function (n) {
+      return n.innerText;
+    }).join('\n');
+    // Use the traditional method which is more reliable in content scripts
     var clipboardHelper = document.createElement('textarea');
     try {
-      var text = searchInfo.highlightedNodes.map(function (n) {
-        return n.innerText;
-      }).join('\n');
-      clipboardHelper.appendChild(document.createTextNode(text));
+      clipboardHelper.value = text;
+      clipboardHelper.style.position = 'fixed';
+      clipboardHelper.style.left = '-9999px';
+      clipboardHelper.style.top = '-9999px';
       document.body.appendChild(clipboardHelper);
+      clipboardHelper.focus();
       clipboardHelper.select();
-      document.execCommand('copy');
+      var succeeded = document.execCommand('copy');
+      if (!succeeded) {
+        console.error('Failed to copy text');
+      }
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     } finally {
-      document.body.removeChild(clipboardHelper);
+      if (clipboardHelper.parentNode) {
+        clipboardHelper.parentNode.removeChild(clipboardHelper);
+      }
     }
   }
   /* Received getSearchInfo message, return search information for this tab */
