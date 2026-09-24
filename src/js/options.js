@@ -12,13 +12,19 @@ var DEFAULT_INSTANT_RESULTS = true;
 
 /*** FUNCTIONS ***/
 /* Mark status text */
-function markStatus(text, time){
-  var time = typeof time !== 'undefined' ? time : 1250;
+function markStatus(text, time, tone){
+  var duration = typeof time !== 'undefined' ? time : 1250;
   var status = document.getElementById('status');
   status.textContent = text;
-  setTimeout(function() {
+  status.classList.remove('is-error', 'is-ok');
+  if (text) {
+    status.classList.add(tone === 'error' ? 'is-error' : 'is-ok');
+  }
+  window.clearTimeout(status._hideTimer);
+  status._hideTimer = window.setTimeout(function() {
     status.textContent = '';
-  }, time); 
+    status.classList.remove('is-error', 'is-ok');
+  }, duration);
 }
 
 /* Validate input for max results */
@@ -35,11 +41,11 @@ function validateMaxResults() {
       }
       return parseInt(inputVal);
     } else {
-      markStatus(inputVal + " is too large.", 2000);
+      markStatus(inputVal + " is too large.", 2000, 'error');
       document.getElementById('maxResults').style.backgroundColor = ERROR_COLOR;
     }
   } else {
-    markStatus("'" + inputVal + "' is not an integer. Please try another value.", 2000);
+    markStatus("'" + inputVal + "' is not an integer. Please try another value.", 2000, 'error');
     document.getElementById('maxResults').style.backgroundColor = ERROR_COLOR;
   }
   return false;
