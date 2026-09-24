@@ -36,14 +36,6 @@
   "background": {
     "service_worker": "js/background.js"
   },
-  "content_scripts": [
-    {
-      "matches": [ "http://*/*", "https://*/*", "file://*/*" ],
-      "js": [ "js/search-engine.js", "js/content.js" ],
-      "all_frames": true,
-      "run_at": "document_idle"
-    }
-  ],
   "commands": {
     "_execute_action": {
       "suggested_key": {
