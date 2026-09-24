@@ -1,37 +1,37 @@
 {
   "manifest_version": 3,
 
-  "name": "Chrome Regex Search (V3)",
-  "description": "An extension for Regex Search in lieu of Chrome's CTRL+F",
+  "name": "New Chrome Regex Search",
+  "description": "Open-source (MIT) fork of Chrome Regex Search. New find bar, improved regex, and whole-pattern matches.",
   "version": "2.0.0",
   "icons": {
-    "16": "icons/icons_16.png",
-    "24": "icons/icons_24.png",
-    "32": "icons/icons_32.png",
-    "48": "icons/icons_48.png",
-    "64": "icons/icons_64.png",
-    "72": "icons/icons_72.png",
-    "96": "icons/icons_96.png",
-    "128": "icons/icons_128.png",
-    "256": "icons/icons_256.png"
+    "16": "icons/icon_16.png",
+    "24": "icons/icon_24.png",
+    "32": "icons/icon_32.png",
+    "48": "icons/icon_48.png",
+    "64": "icons/icon_64.png",
+    "72": "icons/icon_72.png",
+    "96": "icons/icon_96.png",
+    "128": "icons/icon_128.png",
+    "256": "icons/icon_256.png"
   },
   "action": {
     "default_icon": {
-      "16": "icons/icons_16.png",
-      "24": "icons/icons_24.png",
-      "32": "icons/icons_32.png",
-      "48": "icons/icons_48.png",
-      "64": "icons/icons_64.png",
-      "72": "icons/icons_72.png",
-      "96": "icons/icons_96.png",
-      "128": "icons/icons_128.png",
-      "256": "icons/icons_256.png"
-    },
-    "default_popup": "popup.html"
+      "16": "icons/icon_16.png",
+      "24": "icons/icon_24.png",
+      "32": "icons/icon_32.png",
+      "48": "icons/icon_48.png",
+      "64": "icons/icon_64.png",
+      "72": "icons/icon_72.png",
+      "96": "icons/icon_96.png",
+      "128": "icons/icon_128.png",
+      "256": "icons/icon_256.png"
+    }
   },
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "background": {
     "service_worker": "js/background.js"
@@ -39,7 +39,9 @@
   "content_scripts": [
     {
       "matches": [ "http://*/*", "https://*/*", "file://*/*" ],
-      "js": [ "js/content.js" ]
+      "js": [ "js/search-engine.js", "js/content.js" ],
+      "all_frames": true,
+      "run_at": "document_idle"
     }
   ],
   "commands": {

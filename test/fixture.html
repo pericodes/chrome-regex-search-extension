@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Prueba del buscador</title>
+    <style>
+      body { font-family: "Segoe UI", sans-serif; margin: 32px; line-height: 1.5; background: #fff; color: #202124; }
+      pre { font-family: Consolas, monospace; }
+      iframe { width: 280px; height: 48px; border: 1px solid #dadce0; }
+    </style>
+  </head>
+  <body>
+    <h1>Prueba del buscador</h1>
+    <p>Texto partido, mayúsculas, archivo, salto de línea, campo, figura, sombra, svg e iframe.</p>
+    <p id="split">Antes <span>op</span><span>p</span> despues</p>
+    <p id="word">opportunity y OPP</p>
+    <p id="file">ver file.txt y fileXtxt</p>
+    <pre id="wrap">foo
+bar</pre>
+    <p><input id="field" type="text" value="valorinputqq"></p>
+    <figure><figcaption>figuracaptionqq</figcaption></figure>
+    <div id="shadow-host"></div>
+    <div hidden>ocultohiddenqq</div>
+    <div style="display:none">ocultodisplayqq</div>
+    <svg width="160" height="24" viewBox="0 0 160 24"><text x="0" y="16" font-size="14">svgtextoqq</text></svg>
+    <iframe id="frame" src="inner.html" title="marco"></iframe>
+    <script>
+      document.getElementById('shadow-host').attachShadow({ mode: 'open' }).innerHTML = '<p>sombraunicoqq</p>';
+    </script>
+    <script src="../src/js/search-engine.js"></script>
+    <script src="../src/js/content.js"></script>
+  </body>
+</html>
